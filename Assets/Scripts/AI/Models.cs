@@ -62,8 +62,6 @@ namespace TheRPG.Content
 		public string Base;
 		public string AiStyle;
 		public string AiTarget; // "summary"|"dialogue"|"flavor"
-
-		public bool IsCritical() => false;
 	}
 
 	public sealed class NarrativeEvent
@@ -78,6 +76,12 @@ namespace TheRPG.Content
 		public List<Choice> Choices;
 		public Dictionary<string, object> Variables;
 		public string Next;
+
+		public bool IsCritical()
+		{
+			if (Variables == null) return false;
+			return Variables.TryGetValue("critical", out var v) && v is bool b && b;
+		}
 	}
 
 	public sealed class ResolutionResult
