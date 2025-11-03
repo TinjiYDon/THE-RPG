@@ -1,0 +1,31 @@
+# Flutter/Dart
+**/build/
+.dart_tool/
+.packages
+.flutter-plugins
+.flutter-plugins-dependencies
+.melos_tool/
+.pub-cache/
+.pub/
+coverage/
+**/*.lock
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated
+**/generated_plugin_registrant.dart
+**/l10n/*.g.dart
+
+# Secrets
+*.keystore
+*.jks
+*.p12
+*.pem
+.env

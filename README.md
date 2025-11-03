@@ -37,6 +37,12 @@ A 2D cyber–wuxia RPG. Rules-first design with an optional offline LLM for flav
 - Windows: standard Unity build. Steam/itch.io packaging external.
 - Android: plan main APK + optional model pack via StreamingAssets/expansion (TBD).
 
+## Mobile (Flutter)
+
+- Location: `mobile/`
+- Requirements: Flutter SDK installed locally (not part of repo)
+- Quick run: `cd mobile && flutter run`
+
 ## Contributing
 
 - Event JSONs should pass the Editor validator with no duplicates or orphan next refs.
