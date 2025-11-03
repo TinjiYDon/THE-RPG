@@ -1,0 +1,19 @@
+{
+	"id": "evt_dun_affix_001",
+	"category": "dungeon",
+	"tags": ["combat","affix"],
+	"weight": 9,
+	"cooldown": 0,
+	"conditions": [],
+	"text": { "base": "镭纹刀客拦路。", "ai_style": "招式名点缀", "ai_target": "dialogue" },
+	"choices": [
+		{ "id": "fight", "label": "拔刀", "effects": [
+			{ "type": "start_combat", "key": "enemy.rogue_samurai", "set": { "affix": "bleed_dot" } }
+		]},
+		{ "id": "evade", "label": "借位", "effects": [
+			{ "type": "stat", "key": "player.energy", "delta": -3 }
+		]}
+	]
+}
+
+

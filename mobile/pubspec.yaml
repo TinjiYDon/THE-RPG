@@ -18,4 +18,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/events/evt_town_contract_001.json
+    - assets/events/evt_town_rumor_001.json
+    - assets/events/evt_wild_implant_001.json
+    - assets/events/evt_dun_affix_001.json
+    - assets/events/evt_story_choice_001.json
 
