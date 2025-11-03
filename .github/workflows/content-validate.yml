@@ -1,0 +1,60 @@
+name: Content Validate
+
+on:
+  push:
+    paths:
+      - 'Assets/Content/events/**.json'
+      - '.github/workflows/content-validate.yml'
+  pull_request:
+    paths:
+      - 'Assets/Content/events/**.json'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure jq present
+        run: |
+          jq --version || sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Validate JSON syntax
+        run: |
+          set -e
+          shopt -s nullglob
+          files=(Assets/Content/events/**/*.json Assets/Content/events/*.json)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No event JSON files found"; exit 0; fi
+          for f in ${files[@]}; do
+            jq . "$f" > /dev/null || { echo "Invalid JSON: $f"; exit 1; }
+          done
+
+      - name: Check duplicate event ids
+        run: |
+          set -e
+          shopt -s nullglob
+          files=(Assets/Content/events/**/*.json Assets/Content/events/*.json)
+          ids=$(jq -r '.id // empty' ${files[@]} | sed '/^$/d' | sort)
+          dups=$(echo "$ids" | uniq -d)
+          if [ -n "$dups" ]; then
+            echo "Duplicate IDs detected:"; echo "$dups"; exit 1; fi
+
+      - name: Check orphan next references
+        run: |
+          set -e
+          shopt -s nullglob
+          files=(Assets/Content/events/**/*.json Assets/Content/events/*.json)
+          ids=$(jq -r '.id // empty' ${files[@]} | sed '/^$/d' | sort | uniq)
+          # collect next and choice.next
+          nexts=$(jq -r '.next // empty' ${files[@]} ; jq -r '.choices[]?.next // empty' ${files[@]} | sed '/^$/d')
+          missing=()
+          while IFS= read -r n; do
+            [ -z "$n" ] && continue
+            echo "$ids" | grep -qx "$n" || missing+=("$n")
+          done <<< "$nexts"
+          if [ ${#missing[@]} -gt 0 ]; then
+            echo "Orphan next references:"; printf '%s\n' "${missing[@]}" | sort -u; exit 1; fi
+
+
