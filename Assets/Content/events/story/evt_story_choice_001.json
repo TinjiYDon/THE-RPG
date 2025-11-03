@@ -1,0 +1,21 @@
+{
+	"id": "evt_story_choice_001",
+	"category": "story",
+	"tags": ["story","branch"],
+	"weight": 1,
+	"cooldown": 0,
+	"conditions": [{ "type": "rep", "op": ">=", "key": "faction.black_lotus", "value": 10 }],
+	"text": { "base": "刀口之上站队。", "ai_style": "", "ai_target": "dialogue" },
+	"choices": [
+		{ "id": "lotus", "label": "向黑莲拱手", "effects": [
+			{ "type": "rep", "key": "faction.black_lotus", "delta": 5 },
+			{ "type": "rep", "key": "faction.corp_hex", "delta": -5 }
+		], "next": "evt_town_contract_001" },
+		{ "id": "corp", "label": "签公司协议", "effects": [
+			{ "type": "rep", "key": "faction.corp_hex", "delta": 5 },
+			{ "type": "rep", "key": "faction.black_lotus", "delta": -5 }
+		]}
+	]
+}
+
+

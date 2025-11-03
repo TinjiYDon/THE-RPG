@@ -1,0 +1,20 @@
+{
+	"id": "evt_town_contract_001",
+	"category": "town",
+	"tags": ["contract","faction","reputation"],
+	"weight": 10,
+	"cooldown": 2,
+	"conditions": [{ "type": "var", "op": ">=", "key": "player.level", "value": 1 }],
+	"text": { "base": "堂口霓虹微闪，师爷递来加密契约。", "ai_style": "冷峻短句", "ai_target": "flavor" },
+	"choices": [
+		{ "id": "accept", "label": "签下义气单", "effects": [
+			{ "type": "rep", "key": "faction.black_lotus", "delta": 5 },
+			{ "type": "add_quest", "key": "q_black_lotus_001" }
+		]},
+		{ "id": "decline", "label": "拱手辞去", "effects": [
+			{ "type": "rep", "key": "faction.black_lotus", "delta": -2 }
+		]}
+	]
+}
+
+

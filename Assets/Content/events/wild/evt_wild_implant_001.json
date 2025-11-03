@@ -1,0 +1,21 @@
+{
+	"id": "evt_wild_implant_001",
+	"category": "wild",
+	"tags": ["implant","risk"],
+	"weight": 6,
+	"cooldown": 2,
+	"conditions": [{ "type": "var", "op": ">", "key": "player.implant_load", "value": 60 }],
+	"text": { "base": "义体过载，耳畔刀鸣似潮。", "ai_style": "感官隐喻", "ai_target": "summary" },
+	"choices": [
+		{ "id": "meditate", "label": "断电吐纳", "effects": [
+			{ "type": "stat", "key": "player.energy", "delta": -5 },
+			{ "type": "stat", "key": "player.stability", "delta": 10 }
+		]},
+		{ "id": "push", "label": "硬顶频率", "effects": [
+			{ "type": "gain_trait", "key": "trait.overclocked" },
+			{ "type": "stat", "key": "player.hp", "delta": -8 }
+		]}
+	]
+}
+
+
