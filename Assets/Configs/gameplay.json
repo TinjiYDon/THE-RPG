@@ -1,0 +1,18 @@
+{
+	"stats": {
+		"player.level": 1,
+		"player.hp": 100,
+		"player.energy": 50,
+		"player.stability": 60,
+		"player.implant_load": 0
+	},
+	"factions": {
+		"faction.black_lotus": 0,
+		"faction.corp_hex": 0
+	},
+	"economy": {
+		"credits": 100
+	}
+}
+
+
