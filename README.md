@@ -43,6 +43,12 @@ A 2D cyber–wuxia RPG. Rules-first design with an optional offline LLM for flav
 - Requirements: Flutter SDK installed locally (not part of repo)
 - Quick run: `cd mobile && flutter run`
 
+### Sync Unity events to mobile assets
+
+- Prereq: Python 3
+- Run: `python tools/sync_events.py`
+- Copies all `Assets/Content/events/**/*.json` into `mobile/assets/events/`
+
 ## Contributing
 
 - Event JSONs should pass the Editor validator with no duplicates or orphan next refs.

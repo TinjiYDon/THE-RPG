@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/content_loader.dart';
 import '../services/models.dart';
+import 'dialogue_page.dart';
 
 class EventsPage extends StatefulWidget {
 	const EventsPage({super.key});
@@ -60,6 +61,7 @@ class _EventsPageState extends State<EventsPage> {
 				return ListTile(
 					title: Text(e.id),
 					subtitle: Text('${e.category}  ·  weight=${e.weight}  ·  cd=${e.cooldown}'),
+					onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DialoguePage(event: e))),
 				);
 			},
 		);
