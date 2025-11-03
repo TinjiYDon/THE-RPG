@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/models.dart';
+import '../services/world_state.dart';
+import '../services/graph.dart';
 
 class DialoguePage extends StatelessWidget {
 	final NarrativeEvent event;
@@ -25,7 +27,12 @@ class DialoguePage extends StatelessWidget {
 										padding: const EdgeInsets.only(bottom: 8),
 										child: ElevatedButton(
 											onPressed: () {
-												ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Picked ${ch.id}')));
+												final graph = NarrativeGraph();
+												graph.load([event]);
+												final world = WorldState();
+												final res = graph.resolve(event.id, ch.id, world);
+												final msg = 'Choice ${ch.id} applied, next: ${res.nextId ?? '-'}';
+												ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 											},
 											child: Text(ch.label),
 										),
