@@ -11,6 +11,9 @@ namespace TheRPG.Dialogue
 	{
 		Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices);
 		void Log(DialogueEntry entry);
+		void ShowLoading(string message);
+		void HideLoading();
+		void ShowProgress(float progress, string message);
 	}
 
 	public sealed class DialogueEntry
@@ -29,6 +32,9 @@ namespace TheRPG.Dialogue
 
 		TaskCompletionSource<Choice> _pending;
 		readonly List<Button> _spawned = new List<Button>();
+		GameObject _loadingPanel;
+		Text _loadingText;
+		Image _progressBar;
 
 		void Awake()
 		{
@@ -55,6 +61,80 @@ namespace TheRPG.Dialogue
 		public void Log(DialogueEntry entry)
 		{
 			// Hook for history log (optional)
+		}
+
+		public void ShowLoading(string message)
+		{
+			EnsureLoadingPanel();
+			if (_loadingPanel != null) _loadingPanel.SetActive(true);
+			if (_loadingText != null) _loadingText.text = message ?? "加载中...";
+			if (_progressBar != null) _progressBar.fillAmount = 0f;
+		}
+
+		public void HideLoading()
+		{
+			if (_loadingPanel != null) _loadingPanel.SetActive(false);
+		}
+
+		public void ShowProgress(float progress, string message)
+		{
+			EnsureLoadingPanel();
+			if (_loadingPanel != null) _loadingPanel.SetActive(true);
+			if (_loadingText != null) _loadingText.text = message ?? $"加载中... {progress:P0}";
+			if (_progressBar != null) _progressBar.fillAmount = Mathf.Clamp01(progress);
+		}
+
+		void EnsureLoadingPanel()
+		{
+			if (_loadingPanel != null) return;
+			EnsureUi();
+			var panelGo = new GameObject("LoadingPanel");
+			panelGo.transform.SetParent(_canvas.transform, false);
+			var panelImg = panelGo.AddComponent<Image>();
+			panelImg.color = new Color(0, 0, 0, 0.7f);
+			var rt = panelGo.GetComponent<RectTransform>();
+			rt.anchorMin = Vector2.zero;
+			rt.anchorMax = Vector2.one;
+			rt.offsetMin = Vector2.zero;
+			rt.offsetMax = Vector2.zero;
+
+			var textGo = new GameObject("LoadingText");
+			textGo.transform.SetParent(panelGo.transform, false);
+			_loadingText = textGo.AddComponent<Text>();
+			_loadingText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+			_loadingText.alignment = TextAnchor.MiddleCenter;
+			_loadingText.color = Color.white;
+			_loadingText.fontSize = 24;
+			var textRt = _loadingText.rectTransform;
+			textRt.anchorMin = new Vector2(0.1f, 0.5f);
+			textRt.anchorMax = new Vector2(0.9f, 0.6f);
+			textRt.offsetMin = Vector2.zero;
+			textRt.offsetMax = Vector2.zero;
+
+			var barGo = new GameObject("ProgressBar");
+			barGo.transform.SetParent(panelGo.transform, false);
+			var barBg = barGo.AddComponent<Image>();
+			barBg.color = new Color(0.3f, 0.3f, 0.3f, 1f);
+			var barRt = barBg.rectTransform;
+			barRt.anchorMin = new Vector2(0.1f, 0.4f);
+			barRt.anchorMax = new Vector2(0.9f, 0.45f);
+			barRt.offsetMin = Vector2.zero;
+			barRt.offsetMax = Vector2.zero;
+
+			var barFillGo = new GameObject("Fill");
+			barFillGo.transform.SetParent(barGo.transform, false);
+			_progressBar = barFillGo.AddComponent<Image>();
+			_progressBar.color = new Color(0.2f, 0.8f, 0.2f, 1f);
+			_progressBar.type = Image.Type.Filled;
+			_progressBar.fillMethod = Image.FillMethod.Horizontal;
+			var fillRt = _progressBar.rectTransform;
+			fillRt.anchorMin = Vector2.zero;
+			fillRt.anchorMax = Vector2.one;
+			fillRt.offsetMin = Vector2.zero;
+			fillRt.offsetMax = Vector2.zero;
+
+			_loadingPanel = panelGo;
+			_loadingPanel.SetActive(false);
 		}
 
 		void OnPick(Choice ch)

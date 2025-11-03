@@ -9,14 +9,14 @@ namespace TheRPG.AI
 	public interface IAIAdapter
 	{
 		bool IsEnabled();
-		Task EnsureModelReady();
+		Task EnsureModelReady(System.Action<float, string> onProgress = null);
 		Task<string> Stylize(string @base, AiTarget target, string style, CharacterCard card, int budgetTokens, int timeoutMs);
 	}
 
 	public sealed class NullAIAdapter : IAIAdapter
 	{
 		public bool IsEnabled() { return false; }
-		public Task EnsureModelReady() { return Task.CompletedTask; }
+		public Task EnsureModelReady(System.Action<float, string> onProgress = null) { return Task.CompletedTask; }
 		public Task<string> Stylize(string @base, AiTarget target, string style, CharacterCard card, int budgetTokens, int timeoutMs)
 		{
 			return Task.FromResult(@base);
@@ -38,7 +38,7 @@ namespace TheRPG.AI
 			return _flags.EnableAi;
 		}
 
-		public async Task EnsureModelReady()
+		public async Task EnsureModelReady(System.Action<float, string> onProgress = null)
 		{
 			if (_modelReady) return;
 			if (!_flags.EnableModelDownload)
@@ -47,8 +47,15 @@ namespace TheRPG.AI
 				return;
 			}
 			// Placeholder: actual model download/init would go here
-			await Task.Delay(100);
+			// Simulate progress for demo
+			for (int i = 0; i <= 10; i++)
+			{
+				var p = i / 10f;
+				onProgress?.Invoke(p, $"下载模型中... {p:P0}");
+				await Task.Delay(50);
+			}
 			_modelReady = true;
+			onProgress?.Invoke(1f, "模型就绪");
 		}
 
 		public async Task<string> Stylize(string @base, AiTarget target, string style, CharacterCard card, int budgetTokens, int timeoutMs)
