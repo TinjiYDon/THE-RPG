@@ -37,16 +37,29 @@ namespace TheRPG.Dialogue
 		Text _loadingText;
 		Image _progressBar;
 
+		bool _typing;
+		float _typeSpeed = 0.02f; // seconds per char
+		bool _skip;
+
 		void Awake()
 		{
 			EnsureUi();
+		}
+
+		void Update()
+		{
+			if (_typing)
+			{
+				if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)) _skip = true;
+				if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)) _typeSpeed = 0.005f; else _typeSpeed = 0.02f;
+			}
 		}
 
 		public async Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices)
 		{
 			EnsureUi();
 			ClearButtons();
-			_text.text = Localize(renderedText ?? ev?.Text?.Base ?? string.Empty);
+			await TypeText(Localize(renderedText ?? ev?.Text?.Base ?? string.Empty));
 			_pending = new TaskCompletionSource<Choice>();
 			for (int i = 0; i < (choices?.Count ?? 0); i++)
 			{
@@ -57,6 +70,19 @@ namespace TheRPG.Dialogue
 				_spawned.Add(btn);
 			}
 			return await _pending.Task;
+		}
+
+		async Task TypeText(string full)
+		{
+			_typing = true; _skip = false;
+			_text.text = string.Empty;
+			for (int i = 0; i < full.Length; i++)
+			{
+				_text.text = full.Substring(0, i + 1);
+				if (_skip) { _text.text = full; break; }
+				await Task.Delay(TimeSpan.FromSeconds(_typeSpeed));
+			}
+			_typing = false; _skip = false;
 		}
 
 		string Localize(string input)

@@ -5,6 +5,7 @@ using TheRPG.AI;
 using TheRPG.Content;
 using TheRPG.Narrative;
 using TheRPG.Save;
+using TheRPG.UI;
 
 namespace TheRPG.Dialogue
 {
@@ -42,7 +43,6 @@ namespace TheRPG.Dialogue
 			var baseText = ev.Text?.Base ?? string.Empty;
 			var rendered = baseText;
 
-			// AI stylize if enabled and not critical
 			if (_aiAdapter.IsEnabled() && !ev.IsCritical() && !string.IsNullOrEmpty(ev.Text?.AiStyle))
 			{
 				_ui.ShowLoading(StringTable.Get("ui.loading.init_model", "初始化 AI 模型..."));
@@ -74,6 +74,26 @@ namespace TheRPG.Dialogue
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
 			graph.TickCooldowns();
+
+			// Floating feedback for applied effects
+			var canvas = FindObjectOfType<Canvas>();
+			if (canvas != null && res.AppliedEffects != null)
+			{
+				foreach (var eff in res.AppliedEffects)
+				{
+					if (eff == null) continue;
+					string msg = null;
+					switch (eff.Type)
+					{
+						case "rep": msg = $"声望 {eff.Key.Split('.')} {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
+						case "currency": msg = $"信用 {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
+						case "stat": msg = $"{eff.Key} {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
+						case "add_item": msg = $"获得 {eff.Key}"; break;
+						case "gain_trait": msg = $"获得特性 {eff.Key}"; break;
+					}
+					if (!string.IsNullOrEmpty(msg)) FloatingText.Spawn(canvas, msg, Color.cyan);
+				}
+			}
 
 			// Save after resolution
 			var save = new GameSave
