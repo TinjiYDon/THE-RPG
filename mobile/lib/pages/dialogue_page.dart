@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/models.dart';
-import '../services/world_state.dart';
-import '../services/graph.dart';
+import '../services/runtime.dart';
+import 'events_page.dart';
 
 class DialoguePage extends StatelessWidget {
 	final NarrativeEvent event;
@@ -26,14 +26,7 @@ class DialoguePage extends StatelessWidget {
 									return Padding(
 										padding: const EdgeInsets.only(bottom: 8),
 										child: ElevatedButton(
-											onPressed: () {
-												final graph = NarrativeGraph();
-												graph.load([event]);
-												final world = WorldState();
-												final res = graph.resolve(event.id, ch.id, world);
-												final msg = 'Choice ${ch.id} applied, next: ${res.nextId ?? '-'}';
-												ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-											},
+											onPressed: () => _onChoice(context, ch),
 											child: Text(ch.label),
 										),
 									);
@@ -44,6 +37,34 @@ class DialoguePage extends StatelessWidget {
 				),
 			),
 		);
+	}
+
+	void _onChoice(BuildContext context, Choice ch) {
+		final graph = NarrativeRuntime.graph;
+		final world = NarrativeRuntime.world;
+		final res = graph.resolve(event.id, ch.id, world);
+
+		if (res.nextId != null && res.nextId!.isNotEmpty) {
+			// Find and navigate to next event
+			final next = _findEventById(res.nextId!);
+			if (next != null) {
+				Navigator.pushReplacement(
+					context,
+					MaterialPageRoute(builder: (_) => DialoguePage(event: next)),
+				);
+				return;
+			}
+		}
+
+		// No next event, return to events list
+		ScaffoldMessenger.of(context).showSnackBar(
+			SnackBar(content: Text('Choice applied: ${ch.label}')),
+		);
+		Navigator.of(context).popUntil((route) => route.isFirst);
+	}
+
+	NarrativeEvent? _findEventById(String id) {
+		return NarrativeRuntime.graph.findById(id);
 	}
 }
 

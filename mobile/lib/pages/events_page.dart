@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/content_loader.dart';
 import '../services/models.dart';
+import '../services/runtime.dart';
 import 'dialogue_page.dart';
 
 class EventsPage extends StatefulWidget {
@@ -24,6 +25,9 @@ class _EventsPageState extends State<EventsPage> {
 	Future<void> _load() async {
 		setState(() { _loading = true; _error = null; });
 		try {
+			// Initialize runtime first
+			await NarrativeRuntime.initialize();
+			// Load events for display
 			final list = await ContentLoader.loadFromAssets('assets/events');
 			setState(() { _events = list; });
 		} catch (e) {

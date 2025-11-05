@@ -53,12 +53,14 @@ class NarrativeGraph {
 		return Resolution(true, ch.next ?? e.next);
 	}
 
-	NarrativeEvent? _find(String id) {
+	NarrativeEvent? findById(String id) {
 		for (final list in _byCat.values) {
 			for (final e in list) { if (e.id == id) return e; }
 		}
 		return null;
 	}
+
+	NarrativeEvent? _find(String id) => findById(id);
 
 	void _applyEffects(WorldState world, List effects) {
 		for (final eff in effects) {
