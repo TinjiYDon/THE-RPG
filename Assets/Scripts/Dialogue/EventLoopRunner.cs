@@ -59,7 +59,18 @@ namespace TheRPG.Dialogue
 				_ui.HideLoading();
 			}
 
-			var choice = await _ui.Show(ev, rendered, ev.Choices as IReadOnlyList<Choice>);
+			// Filter choices by requirements before showing
+			var evaluator = new ConditionEvaluator();
+			var filtered = new List<Choice>();
+			foreach (var ch in ev.Choices)
+			{
+				if (ch.Requirements == null || evaluator.Evaluate(ch.Requirements, world))
+				{
+					filtered.Add(ch);
+				}
+			}
+
+			var choice = await _ui.Show(ev, rendered, filtered);
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
 			graph.TickCooldowns();

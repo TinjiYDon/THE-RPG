@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/models.dart';
 import '../services/runtime.dart';
+import '../services/evaluator.dart';
 import 'events_page.dart';
 
 class DialoguePage extends StatelessWidget {
@@ -18,17 +19,18 @@ class DialoguePage extends StatelessWidget {
 					children: [
 						Text(event.text.base, style: Theme.of(context).textTheme.titleMedium),
 						const SizedBox(height: 16),
-						Expanded(
+                        Expanded(
 							child: ListView.builder(
 								itemCount: event.choices.length,
 								itemBuilder: (context, index) {
 									final ch = event.choices[index];
+                                    final ok = ConditionEvaluator().evaluate(ch.requirements, NarrativeRuntime.world);
 									return Padding(
 										padding: const EdgeInsets.only(bottom: 8),
-										child: ElevatedButton(
-											onPressed: () => _onChoice(context, ch),
-											child: Text(ch.label),
-										),
+                                        child: ElevatedButton(
+                                            onPressed: ok ? () => _onChoice(context, ch) : null,
+                                            child: Text(ch.label + (ok ? '' : ' (条件不足)')),
+                                        ),
 									);
 								},
 							),
