@@ -4,6 +4,7 @@ using UnityEngine;
 using TheRPG.AI;
 using TheRPG.Content;
 using TheRPG.Narrative;
+using TheRPG.Save;
 
 namespace TheRPG.Dialogue
 {
@@ -14,12 +15,14 @@ namespace TheRPG.Dialogue
 
 		private IAIAdapter _aiAdapter;
 		private FeatureFlags _flags;
+		private ISaveService _saveService;
 
 		async void Start()
 		{
 			_flags = FeatureFlags.Instance;
 			_flags.Load();
 			_aiAdapter = _flags.EnableAi ? new AIAdapter(_flags) : new NullAIAdapter() as IAIAdapter;
+			_saveService = new SaveService();
 
 			if (NarrativeRuntime.Graph == null)
 			{
@@ -59,6 +62,18 @@ namespace TheRPG.Dialogue
 			var choice = await _ui.Show(ev, rendered, ev.Choices as IReadOnlyList<Choice>);
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
+			graph.TickCooldowns();
+
+			// Save after resolution
+			var save = new GameSave
+			{
+				Version = 1,
+				Scene = _category.ToString(),
+				WorldState = world,
+				HistoryIds = new System.Collections.Generic.List<string> { ev.Id }
+			};
+			await _saveService.Save(1, save);
+
 			Debug.Log($"[THE-RPG] Choice: {choice.Id}, next: {res.NextEventId}");
 		}
 
