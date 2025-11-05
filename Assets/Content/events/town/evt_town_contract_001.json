@@ -14,6 +14,12 @@
 		{ "id": "decline", "label": "@evt.town.contract_001.decline", "effects": [
 			{ "type": "rep", "key": "faction.black_lotus", "delta": -2 }
 		]}
+	],
+	"AiGenerated": [
+		{ "id": "ai_alt_negotiate", "ai_label_hint": "江湖口吻的砍价话术（短句，含行话）", "effects": [
+			{ "type": "currency", "key": "credits", "delta": 10 },
+			{ "type": "rep", "key": "faction.black_lotus", "delta": 1 }
+		]}
 	]
 }
 

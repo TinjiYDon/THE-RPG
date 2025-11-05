@@ -20,21 +20,21 @@ class DialoguePage extends StatelessWidget {
 						Text(event.text.base, style: Theme.of(context).textTheme.titleMedium),
 						const SizedBox(height: 16),
                         Expanded(
-							child: ListView.builder(
-								itemCount: event.choices.length,
-								itemBuilder: (context, index) {
-									final ch = event.choices[index];
+                            child: ListView.builder(
+                                itemCount: _combinedChoices().length,
+                                itemBuilder: (context, index) {
+                                    final ch = _combinedChoices()[index];
                                     final ok = ConditionEvaluator().evaluate(ch.requirements, NarrativeRuntime.world);
-									return Padding(
-										padding: const EdgeInsets.only(bottom: 8),
+                                    return Padding(
+                                        padding: const EdgeInsets.only(bottom: 8),
                                         child: ElevatedButton(
                                             onPressed: ok ? () => _onChoice(context, ch) : null,
                                             child: Text(ch.label + (ok ? '' : ' (条件不足)')),
                                         ),
-									);
-								},
-							),
-						),
+                                    );
+                                },
+                            ),
+                        ),
 					],
 				),
 			),
@@ -69,6 +69,23 @@ class DialoguePage extends StatelessWidget {
 	NarrativeEvent? _findEventById(String id) {
 		return NarrativeRuntime.graph.findById(id);
 	}
+}
+
+List<Choice> _combinedChoices() {
+    final base = event.choices;
+    final gen = event.aiGenerated;
+    if (gen.isEmpty) return base;
+    return [
+        ...base,
+        ...gen.map((t) => Choice(
+            id: t.id,
+            label: t.aiLabelHint ?? t.label,
+            aiLabelHint: t.aiLabelHint,
+            requirements: t.requirements,
+            effects: t.effects,
+            next: t.next,
+        ))
+    ];
 }
 
 

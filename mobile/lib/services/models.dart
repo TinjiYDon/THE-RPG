@@ -67,9 +67,10 @@ class NarrativeEvent {
 	final List<Condition> conditions;
 	final EventText text;
 	final List<Choice> choices;
+	final List<Choice> aiGenerated;
 	final Map<String, dynamic> variables;
 	final String? next;
-	NarrativeEvent({required this.id, required this.category, required this.tags, required this.weight, required this.cooldown, required this.conditions, required this.text, required this.choices, required this.variables, this.next});
+	NarrativeEvent({required this.id, required this.category, required this.tags, required this.weight, required this.cooldown, required this.conditions, required this.text, required this.choices, required this.aiGenerated, required this.variables, this.next});
 	factory NarrativeEvent.fromJson(Map<String, dynamic> j) => NarrativeEvent(
 		id: j['id'] as String,
 		category: _catFrom(j['category'] as String?),
@@ -79,6 +80,7 @@ class NarrativeEvent {
 		conditions: ((j['conditions'] as List?) ?? const []).map((e) => Condition.fromJson(e as Map<String, dynamic>)).toList(),
 		text: EventText.fromJson((j['text'] as Map?)?.cast<String, dynamic>() ?? const {}),
 		choices: ((j['choices'] as List?) ?? const []).map((e) => Choice.fromJson(e as Map<String, dynamic>)).toList(),
+		aiGenerated: ((j['ai_generated'] as List?) ?? (j['AiGenerated'] as List?) ?? const []).map((e) => Choice.fromJson(e as Map<String, dynamic>)).toList(),
 		variables: (j['variables'] as Map?)?.cast<String, dynamic>() ?? <String, dynamic>{},
 		next: j['next'] as String?,
 	);
