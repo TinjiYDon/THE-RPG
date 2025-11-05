@@ -34,7 +34,6 @@ namespace TheRPG.Dialogue
 			}
 			if (_ui == null) _ui = FindObjectOfType<DialogueUI>() ?? new GameObject("DialogueUI").AddComponent<DialogueUI>();
 
-			// First-run onboarding
 			if (!TutorialManager.HasSeen("intro_loop"))
 			{
 				_banner.Show("guide.intro.loop");
@@ -65,12 +64,12 @@ namespace TheRPG.Dialogue
 
 				_ui.ShowLoading(StringTable.Get("ui.loading.stylizing", "AI 润色中..."));
 				var target = ParseAiTarget(ev.Text.AiTarget);
+				var style = ResolveStyle(ev.Text.AiStyle);
 				var card = new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "黑街散修，兼收旧谱与旧世固件，刀术入电。" };
-				rendered = await _aiAdapter.Stylize(baseText, target, ev.Text.AiStyle, card, _flags.AiTokenBudget, _flags.AiTimeoutMs);
+				rendered = await _aiAdapter.Stylize(baseText, target, style, card, _flags.AiTokenBudget, _flags.AiTimeoutMs);
 				_ui.HideLoading();
 			}
 
-			// Build combined choices
 			var combined = new List<Choice>();
 			if (ev.Choices != null) combined.AddRange(ev.Choices);
 			if (_aiAdapter.IsEnabled() && ev.AiGenerated != null)
@@ -78,7 +77,8 @@ namespace TheRPG.Dialogue
 				foreach (var t in ev.AiGenerated)
 				{
 					var labelHint = !string.IsNullOrEmpty(t.AiLabelHint) ? t.AiLabelHint : t.Label;
-					var label = await _aiAdapter.Stylize(labelHint ?? "选择", AiTarget.Dialogue, ev.Text?.AiStyle ?? "", new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "" }, _flags.AiTokenBudget, _flags.AiTimeoutMs);
+					var style2 = ResolveStyle(ev.Text?.AiStyle);
+					var label = await _aiAdapter.Stylize(labelHint ?? "选择", AiTarget.Dialogue, style2, new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "" }, _flags.AiTokenBudget, _flags.AiTimeoutMs);
 					combined.Add(new Choice { Id = string.IsNullOrEmpty(t.Id) ? ($"ai_{combined.Count}") : t.Id, Label = label, AiLabelHint = t.AiLabelHint, Requirements = t.Requirements, Effects = t.Effects, Next = t.Next });
 				}
 			}
@@ -89,7 +89,6 @@ namespace TheRPG.Dialogue
 				TutorialManager.MarkSeen("choice_hints");
 			}
 
-			// Filter by requirements
 			var evaluator = new ConditionEvaluator();
 			var filtered = new List<Choice>();
 			foreach (var ch in combined)
@@ -130,6 +129,9 @@ namespace TheRPG.Dialogue
 				}
 			}
 
+			// Causal guidance
+			_banner.Show("guide.feedback");
+
 			var save = new GameSave
 			{
 				Version = 1,
@@ -140,6 +142,17 @@ namespace TheRPG.Dialogue
 			await _saveService.Save(1, save);
 
 			Debug.Log($"[THE-RPG] Choice: {choice.Id}, next: {res.NextEventId}");
+		}
+
+		private string ResolveStyle(string eventStyle)
+		{
+			switch (_flags.StylePreset)
+			{
+				case "cold": return "冷峻、短句、江湖俚语+企业黑话混用";
+				case "bold": return "豪放、俚语更重、句式更有力";
+				case "minimal": return "极简、留白、信息密度低";
+				default: return eventStyle ?? "";
+			}
 		}
 
 		private AiTarget ParseAiTarget(string s)

@@ -11,6 +11,7 @@ namespace TheRPG.AI
 		public int AiTokenBudget { get; private set; } = 96;
 		public int AiTimeoutMs { get; private set; } = 1800;
 		public bool FallbackToBaseText { get; private set; } = true;
+		public string StylePreset { get; private set; } = "cold"; // cold|bold|minimal
 
 		private static FeatureFlags _instance;
 		public static FeatureFlags Instance
@@ -37,6 +38,7 @@ namespace TheRPG.AI
 					AiTokenBudget = parsed.ai_token_budget;
 					AiTimeoutMs = parsed.ai_timeout_ms;
 					FallbackToBaseText = parsed.fallback_to_base_text;
+					StylePreset = string.IsNullOrEmpty(parsed.style_preset) ? StylePreset : parsed.style_preset;
 				}
 			}
 			catch (Exception e)
@@ -53,6 +55,7 @@ namespace TheRPG.AI
 			public int ai_token_budget;
 			public int ai_timeout_ms;
 			public bool fallback_to_base_text;
+			public string style_preset;
 		}
 	}
 }

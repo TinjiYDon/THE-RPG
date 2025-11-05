@@ -3,7 +3,8 @@
 	"enable_model_download": true,
 	"ai_token_budget": 96,
 	"ai_timeout_ms": 1800,
-	"fallback_to_base_text": true
+	"fallback_to_base_text": true,
+	"style_preset": "cold"
 }
 
 
