@@ -6,6 +6,7 @@ using TheRPG.Content;
 using TheRPG.Narrative;
 using TheRPG.Save;
 using TheRPG.UI;
+using TheRPG.Tutorial;
 
 namespace TheRPG.Dialogue
 {
@@ -17,6 +18,7 @@ namespace TheRPG.Dialogue
 		private IAIAdapter _aiAdapter;
 		private FeatureFlags _flags;
 		private ISaveService _saveService;
+		private GuidanceBanner _banner;
 
 		async void Start()
 		{
@@ -24,12 +26,21 @@ namespace TheRPG.Dialogue
 			_flags.Load();
 			_aiAdapter = _flags.EnableAi ? new AIAdapter(_flags) : new NullAIAdapter() as IAIAdapter;
 			_saveService = new SaveService();
+			_banner = FindObjectOfType<GuidanceBanner>() ?? new GameObject("GuidanceBanner").AddComponent<GuidanceBanner>();
 
 			if (NarrativeRuntime.Graph == null)
 			{
 				await NarrativeRuntime.InitializeFromFolder(System.IO.Path.Combine(Application.dataPath, "Content/events"));
 			}
 			if (_ui == null) _ui = FindObjectOfType<DialogueUI>() ?? new GameObject("DialogueUI").AddComponent<DialogueUI>();
+
+			// First-run onboarding
+			if (!TutorialManager.HasSeen("intro_loop"))
+			{
+				_banner.Show("guide.intro.loop");
+				TutorialManager.MarkSeen("intro_loop");
+			}
+
 			await RunOnce();
 		}
 
@@ -59,7 +70,7 @@ namespace TheRPG.Dialogue
 				_ui.HideLoading();
 			}
 
-			// Build combined choices (base + AI-generated templates with AI labels)
+			// Build combined choices
 			var combined = new List<Choice>();
 			if (ev.Choices != null) combined.AddRange(ev.Choices);
 			if (_aiAdapter.IsEnabled() && ev.AiGenerated != null)
@@ -68,19 +79,17 @@ namespace TheRPG.Dialogue
 				{
 					var labelHint = !string.IsNullOrEmpty(t.AiLabelHint) ? t.AiLabelHint : t.Label;
 					var label = await _aiAdapter.Stylize(labelHint ?? "选择", AiTarget.Dialogue, ev.Text?.AiStyle ?? "", new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "" }, _flags.AiTokenBudget, _flags.AiTimeoutMs);
-					combined.Add(new Choice
-					{
-						Id = string.IsNullOrEmpty(t.Id) ? ($"ai_{combined.Count}") : t.Id,
-						Label = label,
-						AiLabelHint = t.AiLabelHint,
-						Requirements = t.Requirements,
-						Effects = t.Effects,
-						Next = t.Next
-					});
+					combined.Add(new Choice { Id = string.IsNullOrEmpty(t.Id) ? ($"ai_{combined.Count}") : t.Id, Label = label, AiLabelHint = t.AiLabelHint, Requirements = t.Requirements, Effects = t.Effects, Next = t.Next });
 				}
 			}
 
-			// Filter choices by requirements before showing
+			if (!TutorialManager.HasSeen("choice_hints"))
+			{
+				_banner.Show("guide.choice.hint");
+				TutorialManager.MarkSeen("choice_hints");
+			}
+
+			// Filter by requirements
 			var evaluator = new ConditionEvaluator();
 			var filtered = new List<Choice>();
 			foreach (var ch in combined)
@@ -95,6 +104,12 @@ namespace TheRPG.Dialogue
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
 			graph.TickCooldowns();
+
+			if (!TutorialManager.HasSeen("feedback"))
+			{
+				_banner.Show("guide.feedback");
+				TutorialManager.MarkSeen("feedback");
+			}
 
 			var canvas = FindObjectOfType<Canvas>();
 			if (canvas != null && res.AppliedEffects != null)

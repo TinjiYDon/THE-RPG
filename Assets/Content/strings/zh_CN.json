@@ -8,7 +8,10 @@
 	"evt.town.contract_001.decline": "拱手辞去",
 	"evt.town.rumor_001.text": "市集喧嚷，旧谱与旧世固件混着叫卖。",
 	"evt.town.rumor_001.buy": "收一页『剑谱固件』",
-	"evt.town.rumor_001.leave": "摇扇而去"
+	"evt.town.rumor_001.leave": "摇扇而去",
+	"guide.intro.loop": "指引：接委托→遭遇→回城结算。短回合，快反馈。",
+	"guide.choice.hint": "提示：选项上会显示条件，满足才可执行。",
+	"guide.feedback": "提示：选择后有数值飘字与日志，便于回看与学习。"
 }
 
 
