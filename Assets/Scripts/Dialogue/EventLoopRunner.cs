@@ -59,12 +59,43 @@ namespace TheRPG.Dialogue
 				_ui.HideLoading();
 			}
 
-			var choice = await _ui.Show(ev, rendered, ev.Choices as IReadOnlyList<Choice>, world);
+			// Build combined choices (base + AI-generated templates with AI labels)
+			var combined = new List<Choice>();
+			if (ev.Choices != null) combined.AddRange(ev.Choices);
+			if (_aiAdapter.IsEnabled() && ev.AiGenerated != null)
+			{
+				foreach (var t in ev.AiGenerated)
+				{
+					var labelHint = !string.IsNullOrEmpty(t.AiLabelHint) ? t.AiLabelHint : t.Label;
+					var label = await _aiAdapter.Stylize(labelHint ?? "选择", AiTarget.Dialogue, ev.Text?.AiStyle ?? "", new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "" }, _flags.AiTokenBudget, _flags.AiTimeoutMs);
+					combined.Add(new Choice
+					{
+						Id = string.IsNullOrEmpty(t.Id) ? ($"ai_{combined.Count}") : t.Id,
+						Label = label,
+						AiLabelHint = t.AiLabelHint,
+						Requirements = t.Requirements,
+						Effects = t.Effects,
+						Next = t.Next
+					});
+				}
+			}
+
+			// Filter choices by requirements before showing
+			var evaluator = new ConditionEvaluator();
+			var filtered = new List<Choice>();
+			foreach (var ch in combined)
+			{
+				if (ch.Requirements == null || evaluator.Evaluate(ch.Requirements, world))
+				{
+					filtered.Add(ch);
+				}
+			}
+
+			var choice = await _ui.Show(ev, rendered, filtered, world);
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
 			graph.TickCooldowns();
 
-			// Floating feedback for applied effects
 			var canvas = FindObjectOfType<Canvas>();
 			if (canvas != null && res.AppliedEffects != null)
 			{

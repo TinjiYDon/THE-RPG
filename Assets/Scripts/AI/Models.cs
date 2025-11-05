@@ -74,6 +74,7 @@ namespace TheRPG.Content
 		public List<Condition> Conditions;
 		public EventText Text;
 		public List<Choice> Choices;
+		public List<Choice> AiGenerated; // optional: templates for AI-labeled choices
 		public Dictionary<string, object> Variables;
 		public string Next;
 
