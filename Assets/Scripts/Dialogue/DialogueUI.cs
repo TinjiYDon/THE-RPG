@@ -5,12 +5,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using TheRPG.Content;
 using TheRPG.Narrative;
+using TheRPG.World;
 
 namespace TheRPG.Dialogue
 {
 	public interface IDialogueUI
 	{
-		Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices);
+		Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices, WorldState world);
 		void Log(DialogueEntry entry);
 		void ShowLoading(string message);
 		void HideLoading();
@@ -55,21 +56,56 @@ namespace TheRPG.Dialogue
 			}
 		}
 
-		public async Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices)
+		public async Task<Choice> Show(NarrativeEvent ev, string renderedText, IReadOnlyList<Choice> choices, WorldState world)
 		{
 			EnsureUi();
 			ClearButtons();
 			await TypeText(Localize(renderedText ?? ev?.Text?.Base ?? string.Empty));
 			_pending = new TaskCompletionSource<Choice>();
+
+			var evaluator = new ConditionEvaluator();
 			for (int i = 0; i < (choices?.Count ?? 0); i++)
 			{
 				var ch = choices[i];
 				var btn = Instantiate(_buttonPrefab, _buttonsRoot);
 				btn.GetComponentInChildren<Text>().text = Localize(ch.Label);
+				var ok = ch.Requirements == null || evaluator.Evaluate(ch.Requirements, world);
+				btn.interactable = ok;
 				btn.onClick.AddListener(() => OnPick(ch));
 				_spawned.Add(btn);
+
+				if (!ok)
+				{
+					var reasonGo = new GameObject("Reason");
+					reasonGo.transform.SetParent(btn.transform, false);
+					var reason = reasonGo.AddComponent<Text>();
+					reason.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+					reason.alignment = TextAnchor.UpperCenter;
+					reason.color = new Color(1f, 0.6f, 0.6f, 0.9f);
+					reason.fontSize = 14;
+					var rt = reason.rectTransform;
+					rt.anchorMin = new Vector2(0, 0);
+					rt.anchorMax = new Vector2(1, 0);
+					rt.anchoredPosition = new Vector2(0, -18);
+					rt.offsetMin = new Vector2(0, -18);
+					rt.offsetMax = new Vector2(0, 0);
+					reason.text = BuildReason(ch.Requirements);
+				}
 			}
 			return await _pending.Task;
+		}
+
+		string BuildReason(IReadOnlyList<Condition> conditions)
+		{
+			if (conditions == null || conditions.Count == 0) return StringTable.Get("ui.button.cancel", "取消");
+			var parts = new System.Text.StringBuilder();
+			for (int i = 0; i < conditions.Count; i++)
+			{
+				var c = conditions[i];
+				if (i > 0) parts.Append(" · ");
+				parts.Append($"{c.Key} {c.Op} {c.Value}");
+			}
+			return parts.ToString();
 		}
 
 		async Task TypeText(string full)

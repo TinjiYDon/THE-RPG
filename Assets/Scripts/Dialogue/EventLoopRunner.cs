@@ -59,18 +59,7 @@ namespace TheRPG.Dialogue
 				_ui.HideLoading();
 			}
 
-			// Filter choices by requirements before showing
-			var evaluator = new ConditionEvaluator();
-			var filtered = new List<Choice>();
-			foreach (var ch in ev.Choices)
-			{
-				if (ch.Requirements == null || evaluator.Evaluate(ch.Requirements, world))
-				{
-					filtered.Add(ch);
-				}
-			}
-
-			var choice = await _ui.Show(ev, rendered, filtered);
+			var choice = await _ui.Show(ev, rendered, ev.Choices as IReadOnlyList<Choice>, world);
 			if (choice == null) return;
 			var res = graph.ResolveChoice(ev.Id, choice.Id, world);
 			graph.TickCooldowns();
@@ -85,7 +74,7 @@ namespace TheRPG.Dialogue
 					string msg = null;
 					switch (eff.Type)
 					{
-						case "rep": msg = $"声望 {eff.Key.Split('.')} {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
+						case "rep": msg = $"声望 {eff.Key} {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
 						case "currency": msg = $"信用 {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
 						case "stat": msg = $"{eff.Key} {(int) (int.Parse(eff.Delta.ToString()) >=0 ? "+" : "")}{eff.Delta}"; break;
 						case "add_item": msg = $"获得 {eff.Key}"; break;
@@ -95,7 +84,6 @@ namespace TheRPG.Dialogue
 				}
 			}
 
-			// Save after resolution
 			var save = new GameSave
 			{
 				Version = 1,
