@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/settings.dart';
 
 class SettingsPage extends StatefulWidget {
 	const SettingsPage({super.key});
@@ -8,8 +9,20 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-	bool enableAi = true;
-	int tokenBudget = 96;
+    bool enableAi = true;
+    int tokenBudget = 96;
+    final _svc = SettingsService();
+
+    @override
+    void initState() {
+        super.initState();
+        _load();
+    }
+
+    Future<void> _load() async {
+        await _svc.load();
+        setState(() { enableAi = _svc.enableAi; tokenBudget = _svc.tokenBudget; });
+    }
 
 	@override
 	Widget build(BuildContext context) {
@@ -18,23 +31,29 @@ class _SettingsPageState extends State<SettingsPage> {
 			body: ListView(
 				padding: const EdgeInsets.all(16),
 				children: [
-					SwitchListTile(
+                    SwitchListTile(
 						title: const Text('Enable AI'),
 						value: enableAi,
-						onChanged: (v) => setState(() => enableAi = v),
+                        onChanged: (v) async {
+                            setState(() => enableAi = v);
+                            _svc.enableAi = enableAi; await _svc.save();
+                        },
 					),
 					Row(
 						children: [
 							const Text('Token Budget'),
 							const SizedBox(width: 12),
-							Expanded(
+                            Expanded(
 								child: Slider(
 									value: tokenBudget.toDouble(),
 									min: 32,
 									max: 256,
 									divisions: 7,
 									label: '$tokenBudget',
-									onChanged: (v) => setState(() => tokenBudget = v.toInt()),
+                                    onChanged: (v) async {
+                                        setState(() => tokenBudget = v.toInt());
+                                        _svc.tokenBudget = tokenBudget; await _svc.save();
+                                    },
 								),
 							),
 						],
