@@ -43,6 +43,7 @@ class DialoguePage extends StatelessWidget {
 		final graph = NarrativeRuntime.graph;
 		final world = NarrativeRuntime.world;
 		final res = graph.resolve(event.id, ch.id, world);
+		graph.tickCooldowns();
 
 		if (res.nextId != null && res.nextId!.isNotEmpty) {
 			// Find and navigate to next event
@@ -58,7 +59,7 @@ class DialoguePage extends StatelessWidget {
 
 		// No next event, return to events list
 		ScaffoldMessenger.of(context).showSnackBar(
-			SnackBar(content: Text('Choice applied: ${ch.label}')),
+			SnackBar(content: Text('Choice applied: ${ch.label} (no next)')),
 		);
 		Navigator.of(context).popUntil((route) => route.isFirst);
 	}

@@ -5,13 +5,13 @@
 	"weight": 7,
 	"cooldown": 1,
 	"conditions": [],
-	"text": { "base": "市集喧嚷，旧谱与旧世固件混着叫卖。", "ai_style": "俏皮行话", "ai_target": "flavor" },
+	"text": { "base": "@evt.town.rumor_001.text", "ai_style": "俏皮行话", "ai_target": "flavor" },
 	"choices": [
-		{ "id": "buy", "label": "收一页『剑谱固件』", "effects": [
+		{ "id": "buy", "label": "@evt.town.rumor_001.buy", "effects": [
 			{ "type": "currency", "key": "credits", "delta": -20 },
 			{ "type": "add_item", "key": "mod.sword_firmware_page" }
 		]},
-		{ "id": "leave", "label": "摇扇而去", "effects": []}
+		{ "id": "leave", "label": "@evt.town.rumor_001.leave", "effects": []}
 	]
 }
 
