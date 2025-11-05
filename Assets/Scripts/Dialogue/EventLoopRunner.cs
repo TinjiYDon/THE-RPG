@@ -45,14 +45,14 @@ namespace TheRPG.Dialogue
 			// AI stylize if enabled and not critical
 			if (_aiAdapter.IsEnabled() && !ev.IsCritical() && !string.IsNullOrEmpty(ev.Text?.AiStyle))
 			{
-				_ui.ShowLoading("初始化 AI 模型...");
+				_ui.ShowLoading(StringTable.Get("ui.loading.init_model", "初始化 AI 模型..."));
 				await _aiAdapter.EnsureModelReady((progress, msg) =>
 				{
 					_ui.ShowProgress(progress, msg);
 				});
 				_ui.HideLoading();
 
-				_ui.ShowLoading("AI 润色中...");
+				_ui.ShowLoading(StringTable.Get("ui.loading.stylizing", "AI 润色中..."));
 				var target = ParseAiTarget(ev.Text.AiTarget);
 				var card = new CharacterCard { Id = "char_mc", Name = "游丝", Bio = "黑街散修，兼收旧谱与旧世固件，刀术入电。" };
 				rendered = await _aiAdapter.Stylize(baseText, target, ev.Text.AiStyle, card, _flags.AiTokenBudget, _flags.AiTimeoutMs);

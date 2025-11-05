@@ -3,6 +3,7 @@ import '../services/content_loader.dart';
 import '../services/models.dart';
 import '../services/runtime.dart';
 import 'dialogue_page.dart';
+import '../services/strings.dart';
 
 class EventsPage extends StatefulWidget {
 	const EventsPage({super.key});
@@ -39,9 +40,9 @@ class _EventsPageState extends State<EventsPage> {
 
 	@override
 	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(
-				title: const Text('Events'),
+        return Scaffold(
+            appBar: AppBar(
+                title: Text(Strings.get('events.title', 'Events')),
 				actions: [
 					IconButton(onPressed: () => Navigator.pushNamed(context, '/settings'), icon: const Icon(Icons.settings))
 				],

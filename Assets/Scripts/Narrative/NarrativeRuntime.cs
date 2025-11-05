@@ -11,6 +11,9 @@ namespace TheRPG.Narrative
 
 		public static async Task InitializeFromFolder(string eventsDir)
 		{
+			// Load localization first
+			StringTable.Load("zh_CN");
+
 			var graph = new NarrativeGraph();
 			await graph.LoadFromDirectory(eventsDir);
 			Graph = graph;

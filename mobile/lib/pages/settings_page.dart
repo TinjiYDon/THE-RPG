@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/settings.dart';
+import '../services/strings.dart';
 
 class SettingsPage extends StatefulWidget {
 	const SettingsPage({super.key});
@@ -26,8 +27,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
 	@override
 	Widget build(BuildContext context) {
-		return Scaffold(
-			appBar: AppBar(title: const Text('Settings')),
+        return Scaffold(
+            appBar: AppBar(title: Text(Strings.get('settings.title', 'Settings'))),
 			body: ListView(
 				padding: const EdgeInsets.all(16),
 				children: [

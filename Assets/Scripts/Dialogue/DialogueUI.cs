@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using TheRPG.Content;
+using TheRPG.Narrative;
 
 namespace TheRPG.Dialogue
 {
@@ -45,17 +46,28 @@ namespace TheRPG.Dialogue
 		{
 			EnsureUi();
 			ClearButtons();
-			_text.text = renderedText ?? ev?.Text?.Base ?? string.Empty;
+			_text.text = Localize(renderedText ?? ev?.Text?.Base ?? string.Empty);
 			_pending = new TaskCompletionSource<Choice>();
 			for (int i = 0; i < (choices?.Count ?? 0); i++)
 			{
 				var ch = choices[i];
 				var btn = Instantiate(_buttonPrefab, _buttonsRoot);
-				btn.GetComponentInChildren<Text>().text = ch.Label;
+				btn.GetComponentInChildren<Text>().text = Localize(ch.Label);
 				btn.onClick.AddListener(() => OnPick(ch));
 				_spawned.Add(btn);
 			}
 			return await _pending.Task;
+		}
+
+		string Localize(string input)
+		{
+			if (string.IsNullOrEmpty(input)) return string.Empty;
+			if (input.StartsWith("@"))
+			{
+				var key = input.Substring(1);
+				return StringTable.Get(key, input);
+			}
+			return input;
 		}
 
 		public void Log(DialogueEntry entry)
